@@ -28,4 +28,6 @@ def top_songs():
     return jsonify({"top_songs": get_top_tracks()})
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    import os
+    port = int(os.environ.get("PORT", 10000))  # Render assigns a random port
+    app.run(host='0.0.0.0', port=port)  # Make app accessible publicly
