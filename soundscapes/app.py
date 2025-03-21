@@ -1,3 +1,5 @@
+import sys
+sys.path.append("/opt/render/project/src/soundscapes")
 from flask import Flask, jsonify
 from flask_cors import CORS  # Import CORS
 import requests
