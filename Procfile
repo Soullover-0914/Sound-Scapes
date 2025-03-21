@@ -1,1 +1,1 @@
-web: gunicorn soundscapes.app:app
+web: gunicorn Sound-Scapes.app:app
