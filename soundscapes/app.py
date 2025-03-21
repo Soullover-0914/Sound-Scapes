@@ -1,9 +1,7 @@
-import sys
-sys.path.append("/opt/render/project/src/soundscapes")
-from flask import Flask
-from flask import jsonify
+from flask import Flask, jsonify
 from flask_cors import CORS  # Import CORS
 import requests
+import os
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS
@@ -24,11 +22,15 @@ def get_top_tracks():
         return [{"title": track["name"], "artist": track["artist"]["name"]} for track in tracks]
     return []
 
+# ✅ Added a homepage route (Fix for 404 error)
+@app.route('/')
+def home():
+    return "Hello, your Flask app is live on Render!"
+
 @app.route('/top-songs', methods=['GET'])
 def top_songs():
     return jsonify({"top_songs": get_top_tracks()})
 
 if __name__ == '__main__':
-    import os
-    port = int(os.environ.get("PORT", 10000))  # Render assigns a random port
+    port = int(os.environ.get("PORT", 10000))  # ✅ Keep Render's assigned port
     app.run(host='0.0.0.0', port=port)  # Make app accessible publicly
