@@ -1,0 +1,217 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sound Scapes</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    html, body {
+      width: 100vw;
+      height: 100vh;
+      background-color: #000;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: background 0.05s linear;
+    }
+
+    h1 {
+      font-size: 3em;
+      font-weight: bold;
+      color: #FFF;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      text-shadow: 4px 4px 10px rgba(255, 255, 255, 1);
+      font-family: 'Courier New', Courier, monospace;
+      transform: perspective(800px) rotateX(10deg);
+      transition: transform 1s ease;
+    }
+
+    h1:hover {
+      transform: perspective(800px) rotateX(0deg);
+    }
+
+    p {
+      font-size: 1.3em;
+      color: #FFF;
+      font-style: italic;
+    }
+
+    .navbar {
+      width: 100%;
+      max-width: 400px;
+      padding: 10px;
+      background-color: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .navbar a {
+      display: block;
+      padding: 10px;
+      text-decoration: none;
+      color: white;
+      margin-bottom: 5px;
+      border-radius: 10px;
+      font-weight: bold;
+      cursor: pointer;
+      background-color: rgba(255, 255, 255, 0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      transform-style: preserve-3d;
+    }
+
+    .navbar a:hover {
+      transform: rotateX(8deg) rotateY(-8deg) scale(1.03);
+      box-shadow: 0 10px 30px rgba(0, 255, 255, 0.5);
+    }
+
+    .shuffle-btn {
+      margin-bottom: 15px;
+      padding: 8px 16px;
+      border: 2px solid #00ffff;
+      background: transparent;
+      color: #00ffff;
+      font-weight: bold;
+      font-family: monospace;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s, color 0.3s;
+    }
+
+    .shuffle-btn:hover {
+      background-color: #00ffff;
+      color: #000;
+    }
+
+    .suggestion {
+      margin-top: 15px;
+      font-size: 14px;
+      font-style: italic;
+      color: #00ffff;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Sound Scapes</h1>
+  <p>When Sound meets the colour</p>
+  <p>Extreme Neon Light Show</p>
+
+  <div class="navbar">
+    <button class="shuffle-btn" onclick="shuffleAndPlay()">🔀 Shuffle All</button>
+    <h3>Playlist</h3>
+    <div id="playlist"></div>
+    <div class="suggestion" id="suggestionBox">If you want to play the same song repeatedly, use the loop button on the current player page.</div>
+  </div>
+
+  <script>
+    const songs = [
+      { name: "What The Life", src: "./audio/What The Life - SenSongsMp3.Co.mp3", colors: ['#ff0000', '#ffcc00', '#ffff00', '#00ff00', '#00ffff', '#ff00ff', '#ffffff'], beats: [200, 180, 220, 200, 190] },
+      { name: "Aaya Re Toofan", src: "./audio/128-Aaya Re Toofan - Chhaava 128 Kbps.mp3", colors: ['#FF1493', '#FF4500', '#FFD700', '#00FF00', '#00BFFF', '#8A2BE2', '#FFFFFF'], beats: [150, 160, 140, 155, 145] },
+      { name: "Kesariya", src: "./audio/kesariya.mp3", colors: ['#FF0000', '#FFA500', '#FFFF00', '#7FFF00', '#00FFFF', '#0000FF', '#9400D3'], beats: [300, 320, 280, 310, 290] },
+      { name: "Bhairava Anthem", src: "./audio/Bhairava Anthem.mp3", colors: ['#FF69B4', '#FF8C00', '#FFD700', '#ADFF2F', '#00FFFF', '#1E90FF', '#8B00FF'], beats: [220, 210, 230, 200, 225] },
+      { name: "Pilla Padesaave", src: "./audio/Pilla Padesaave.mp3", colors: ['#FFD700', '#FF6347', '#FF4500', '#7FFF00', '#00FFFF', '#00CED1', '#FFFFFF'], beats: [100, 120, 110, 130, 115] },
+      { name: "Raamam Raaghavam", src: "./audio/Raamam Raaghavam.mp3", colors: ['#FFFFFF', '#FF0000', '#00FF00', '#0000FF', '#FFFF00', '#FF00FF', '#00FFFF'], beats: [350, 340, 360, 370, 355] }
+    ];
+
+    let recentSongs = [];
+    let lastPlayed = null;
+    let isPlayerOpen = false;
+    let suggestionShownFor = null;
+
+    function shuffle(array) {
+      return array.sort(() => Math.random() - 0.5);
+    }
+
+    function openPlayer(song, element) {
+      if (isPlayerOpen) {
+        alert("A song is already playing. Please close the player before playing another song.");
+        return;
+      }
+
+      if (lastPlayed && lastPlayed === song.name) {
+        if (suggestionShownFor !== song.name) {
+          document.getElementById("suggestionBox").style.display = "block";
+          suggestionShownFor = song.name;
+        }
+      } else {
+        document.getElementById("suggestionBox").style.display = "none";
+        suggestionShownFor = null;
+      }
+
+      lastPlayed = song.name;
+
+      recentSongs = recentSongs.filter(n => n !== song.name);
+      recentSongs.unshift(song.name);
+      recentSongs = recentSongs.slice(0, 2);
+
+      loadPlaylist();
+
+      const url = `player.html?song=${encodeURIComponent(song.src)}&colors=${encodeURIComponent(song.colors.join(','))}&beats=${encodeURIComponent(song.beats.join(','))}`;
+      const win = window.open(url, "_blank");
+
+      if (win) {
+        isPlayerOpen = true;
+        const interval = setInterval(() => {
+          if (win.closed) {
+            isPlayerOpen = false;
+            clearInterval(interval);
+          }
+        }, 1000);
+      }
+    }
+
+    function shuffleAndPlay() {
+      const song = songs[Math.floor(Math.random() * songs.length)];
+      openPlayer(song, null);
+    }
+
+    function loadPlaylist() {
+      const list = document.getElementById("playlist");
+      list.innerHTML = "";
+
+      const recentDisplay = [...recentSongs];
+      const recentSet = new Set(recentDisplay);
+      const remainingSongs = songs.filter(s => !recentSet.has(s.name));
+      const shuffledRemaining = shuffle(remainingSongs);
+
+      recentDisplay.forEach(name => {
+        const song = songs.find(s => s.name === name);
+        if (song) {
+          const a = document.createElement("a");
+          a.textContent = `${song.name} (Recently Played)`;
+          a.onclick = () => openPlayer(song, a);
+          list.appendChild(a);
+        }
+      });
+
+      shuffledRemaining.forEach(song => {
+        const a = document.createElement("a");
+        a.textContent = song.name;
+        a.onclick = () => openPlayer(song, a);
+        list.appendChild(a);
+      });
+    }
+
+    window.onload = () => {
+      recentSongs = [];
+      lastPlayed = null;
+      suggestionShownFor = null;
+      document.getElementById("suggestionBox").style.display = "none";
+      loadPlaylist();
+    };
+  </script>
+
+</body>
+</html>
